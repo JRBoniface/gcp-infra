@@ -1,0 +1,49 @@
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: cymbal-frontend-cert
+spec:
+  domains:
+    - cymbal.jrb.solutions
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  annotations:
+    networking.gke.io/v1beta1.FrontendConfig: "frontend-ingress"
+    networking.gke.io/managed-certificates: cymbal-frontend-cert
+    # kubernetes.io/ingress.global-static-ip-name: ADDRESS_NAME
+spec:
+  rules:
+  - host: cymbal.jrb.solutions
+    http:
+      paths:
+      - path: "/"
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: frontend-ingress-backendconfig
+spec:
+  healthCheck:
+    timeoutSec: 1
+    type: HTTP
+    requestPath: /_healthz
+    port: 8080
+---
+apiVersion: networking.gke.io/v1beta1
+kind: FrontendConfig
+metadata:
+  name: frontend-ingress
+spec:
+  redirectToHttps:
+    enabled: false
+    responseCodeName: RESPONSE_CODE
