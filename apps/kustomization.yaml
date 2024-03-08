@@ -4,6 +4,4 @@ kind: Kustomization
 # namePrefix: kustomize-
 
 resources:
-- sample-app
-- ingress-nginx
 - microservices-app
