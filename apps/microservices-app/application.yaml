@@ -1,0 +1,39 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: microservices-apps
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  destinations:
+  - namespace: kustomize-apps
+    server: https://kubernetes.default.svc
+  orphanedResources:
+    warn: false
+  sourceRepos:
+  - '*'  
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: microservices-apps
+  namespace: argocd
+spec:
+  destination:
+    namespace: kustomize-apps
+    server: https://kubernetes.default.svc
+  project: microservices-apps
+  source:
+    path: apps/microservices-app/src
+    repoURL: https://github.com/JRBoniface/gcp-infra.git
+    targetRevision: develop
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+    automated:
+      selfHeal: true
+      prune: true
+---

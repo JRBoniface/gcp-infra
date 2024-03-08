@@ -1,0 +1,57 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sample-project
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  destinations:
+  - namespace: cert-manager
+    server: https://kubernetes.default.svc
+  - namespace: sample-app
+    server: https://kubernetes.default.svc
+  - namespace: ingress-nginx
+    server: https://kubernetes.default.svc
+  orphanedResources:
+    warn: false
+  sourceRepos:
+  - '*'  
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gcp-infra-repo
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  url: https://github.com/JRBoniface/gcp-infra.git
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: ingress-nginx
+  namespace: argocd
+spec:
+  project: sample-project
+  destination:
+    namespace: ingress-nginx
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: https://kubernetes.github.io/ingress-nginx
+    targetRevision: "4.4.0"
+    chart: ingress-nginx
+    helm:
+      values: |
+        controller:
+          service:
+            type: ClusterIP
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+    automated:
+      selfHeal: true
+      prune: true

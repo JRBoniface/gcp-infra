@@ -1,0 +1,34 @@
+global:
+  domain: "argocd.jrb.solutions"
+configs:
+  params:
+    server.insecure: true
+crds:
+  install: true
+  keep: true
+  annotations:
+    app.kubernetes.io/managed-by: "Helm"
+server:
+  service:
+    type: ClusterIP
+    annotations:
+      cloud.google.com/neg: '{"ingress": true}'
+      cloud.google.com/backend-config: '{"ports": {"http":"argocd-server"}}'
+  ingress:
+    enabled: true
+    controller: gke
+    gke:
+      backendConfig:
+        healthCheck:
+          checkIntervalSec: 30
+          timeoutSec: 5
+          healthyThreshold: 1
+          unhealthyThreshold: 2
+          type: HTTP
+          requestPath: /healthz
+          port: 8080
+      frontendConfig:
+        redirectToHttps:
+          enabled: false 
+      managedCertificate:
+        enabled: false

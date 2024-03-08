@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+resources:
+- ingress.yaml
+patches:
+- patch: |-
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: frontend
+      annotations:
+        cloud.google.com/neg: '{"ingress":true}'
+        cloud.google.com/backend-config: '{"ports": {"http":"frontend-ingress-backendconfig"}}'
